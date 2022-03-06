@@ -1,0 +1,237 @@
+#!/bin/bash
+
+cat <<"EOF"
+
+                                         `.-:/+oosssoo+/::-.
+                                    `:oydmNNMMMMMMMMMMMMMNNNmdyo/-`
+                                   -dNMMMMMMMMMMMMMMMMMMMMMMMMMMMNmh+-`
+                                    ........-:/oydNMMMMMMMMMMMMMMMMMMNms:`
+                                           .:os  `.yMMMMMMMMMMMMMMMMMMMMNd+`
+                                         :ymMm/ ``.oMMMMMMMMMMMMMMMMMMMMMMMm/
+                                   ..++yhNMMMmmmmmmMMMMMMMMMMMMMMMMMMMMMMMMMMh.
+                                `/ymNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMs:omd.
+                              .smMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/  `+y`
+                             /NdoyMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN/   .-
+                            `NMddNMMMMMMNmNMddddmNNMMMMMMMMMMMMMMMMMMMMMMMMMy-
+                            `oddddhyso/-.`.-` ```.-:ohNMMMMMMMMMMMMMMMMMMMMMMNy-
+                              ```     ``..            .+dMMMMMMMMMMMMMMMMMMMMMMNo
+                                  ./ohdmmo```..         `/mMMMMMMMMMMMMMMMMMMMMMMs
+                               .+hNMMMMMMNmmmmm:.....`    .dMMMMMMMMMMMMMMMMMMMMMM-
+                             `omMMNNmmmNNMMMMMMMNmmm+-.    `mMMMMMMMMMMMMMMMMN+:yM/
+                            `hMmy/-.....-:/ohmNMMMMo        +MMMMMMMMMMMMMMMMh  `m`
+                            sMd.             `-sNMMs        -MMMMMMMMMMMMMMMMs  ..
+                            NM+                 .yMN        +MMMMMMMMMMMMMMMM/
+                            NMh`                 `hm       .mMMMMMMMMMMMMMMMm`
+                            sMMy.                 --      :mMMMMMMMMMMMMMMMM/
+                            `dMMNs-`                   `:yMMMMMMMMMMdymMMMN+
+                             .hMMMMds/-.`         `.-+ymMMMMMMMMMMNo` hMMm:
+                               +mMMMMMMNdhyysssyyhdNMMMMMMMMMMMMms.  +Mmo`
+                                `/ymMMMMMMMMMMMMMMMMMMMMMMMMNmh/`   +s:`
+                                   `:ohmNNMMMMMMMMMMMMNNNdy+:`
+                                        .-:/+osssso++/:.`
+
+			          Midlleware-Deployer An Automated Tool For Deploying or upgrading Inegration middlewares
+						v1.0
+EOF
+
+#Variabels to be changed:
+deploy='/home/user/projects/NCEP/local-ncep/u01/Deployments'
+middlewares='/home/user/projects/NCEP/local-ncep/u01/middlewares'
+starters='/home/user/projects/NCEP/local-ncep/u01/middlewares/starters'
+
+printf "
+
+\e[7m====================================\e[27m
+\e[7m               Usage                \e[27m  
+\e[7m====================================\e[27m        
+
+Just type middleware and the interactive shell will start --> middleware
+
+[About The Tool]:
+
+Midlleware tool is used to deploy any new integration biller middleware or upgrading any existing one.
+
+[Author]:
+
+[+] Name: Rasheed Eriqat
+[+] Email: rasheed.eriqat@progressoft.com
+
+
+====================================
+
+
+" 1>&2
+printf "\n\e[7m====================================\e[27m\n"
+printf "\e[7m               Banner               \e[27m"
+printf "\n\e[7m====================================\e[27m\n\n"
+
+printf "[+] \e[91mDate \e[0m=> "
+date +'%m-%d-%Y'
+printf "[+] \e[91mCurrent User \e[0m=> "
+if [ "$EUID" = 0 ]
+  then echo "Please run as regular user! Exiting..."
+  exit
+fi
+echo "$USER"
+
+# if [ -z "${domain}" ]; then
+
+#     usage
+#     exit 1
+
+# else
+
+    printf "\n\e[7m====================================\e[27m\n\n"
+
+   
+    
+    cd $date
+    printf "[+] \e[92mCurrent Working Path:\e[0m => "
+    cd $deploy
+    pwd
+    printf "\n\e[7m====================================\e[27m\n\n"
+
+    printf "\n\n\e[33m====================================\e[0m\n"
+    printf "        \e[33mInteractive Shell Mode   \e[0m                  "
+    printf "\n\e[33m====================================\e[0m\n\n"
+
+    printf "Choose Action:
+
+[1] Deploy - deploy new middleware
+[2] Upgrade - Upgrade existing middleware
+[-] Press Enter To Skip
+
+"
+
+    printf "{$USER}@Midlleware-Deployer: "
+    read action
+#########################################################
+#  If you choose 1 the tool will deploy the middleware. #
+#########################################################
+    if [[ $action == 1 ]]; then
+    #creating the middleware folder
+        printf "\n\n -->  \e[93mCreate the middleware folder:  \e[0m   \n\n"
+        printf "[-] \e[91mPlease create the first letter capital for this folder! \e[0m "
+        printf "{$USER}@Midlleware-Deployer: "
+        read mfolder
+        if [[ "$mfolder" =~ ^[A-Z] ]]
+        then
+        printf " \e[92mUpper found creating folder: $mfolder \e[0m\n " 
+        mkdir -p $deploy/$mfolder;sleep 1;
+        else
+        printf " \e[91mNo Upper found, exiting! \e[0m " 
+        fi
+
+        printf " \e[92mFolder created successfuly: $mfolder \e[0m "
+        sleep 1;
+
+
+        #checking the files in the DEPLOY DIR
+        printf "\n\n -->  \e[93mChecking the files in: `pwd`  \e[0m   \n\n"
+        for entry in `ls $deploy`; do
+        printf "[-] \e[92m`file $entry`\n\e[0m"
+        done
+        #choosing the tar file by copy it.
+        printf "\n\n -->  \e[93mChoose the tar file you want from the list above:  \e[0m   \n\n"
+        printf "{$USER}@Midlleware-Deployer: "
+        read choise
+        cp $choise $mfolder
+        cd $mfolder
+        tar -xzvf $choise
+        sleep 1;
+        rm $choise
+        cd $deploy
+
+        #Chooseing the port.
+        printf "\n\n -->  \e[93mChoose the port:  \e[0m   \n\n"
+        cd $deploy
+        usedPorts=`grep -rs $middlewares -e server.port=`
+        echo $usedPorts |tail -10
+        # `less -10 "$usedPorts"`
+        printf "{$USER}@Midlleware-Deployer: "
+        read port
+        if netstat -lntp | grep ':"'$port"'.*java'" > /dev/null; then
+           printf "\n\n -->  \e[93mThis port: $port, is already in use please choose another one, exiting! `exit`  \e[0m   \n\n"
+        else
+        sed -i 's/server.port=2020/server.port='"$port"'/g' $deploy/$mfolder/application.properties
+        sleep 1;
+        printf " \e[92mUsed port: $port\e[0m "
+        fi
+        sleep 2;
+
+
+        #Adding Hikari pool configurations.
+        printf "\n\n -->  \e[93mAdding Hikari pool:  \e[0m   \n\n"
+
+        echo -e "spring.datasource.hikari.connectionTimeout=${hikari_pool_connTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.maxLifetime=${hikari_pool_maxLifetime}/nspring.datasource.hikari.maximumPoolSize=${hikari_pool_maximumPoolSize}\nspring.datasource.hikari.minimumIdle=${hikari_pool_minimumIdle}\nspring.datasource.hikari.leakDetectionThreshold=${hikari_pool_leakDetectionThreshold}" >> $deploy/$mfolder/application.properties;sleep 2;
+        printf " \e[92mDone adding Hikari pool! \e[0m  "
+
+        #Changing permissions.
+        printf "\n\n -->  \e[93mChanging the permissions!  \e[0m   \n\n"
+        cd $deploy
+        chmod -R 777 $mfolder
+        sleep 2;
+        printf " \e[92mDone changing permissions \e[0m  "
+
+        #moving the folder to middleware dir.
+        printf "\n\n -->  \e[93mMoving the middleware to: `echo $middlewares`   \e[0m   \n\n"
+        mv $deploy/$mfolder $middlewares
+        sleep 2;
+        printf " \e[92mDone moving middleware folder! \e[0m  "
+
+        #Creating starter file and folder.
+        printf "\n\n -->   \e[93mCreate the starter folder:  \e[0m   \n\n"
+        printf "[-] \e[91mPlease create the first letter small for this folder! \e[0m "
+
+        printf "{$USER}@Midlleware-Deployer: "
+        read starter
+        mkdir -p $deploy/$starter
+        cd $starter
+        
+        echo "nohup /u01/JRE_OpenJ9/jdk8u282-b08-jre/bin/java -Xdump:none -Xshareclasses -Xquickstart -jar -Duser.timezone=Asia/Ramallah /u01/middlewares/$mfolder/*launcher* &" > "$starter"_start
+        chmod +x "$starter"_start
+       printf " \e[92mStarter file created successfully! $mfolder \e[0m "
+        sleep 2;
+
+        #moving the starter folder
+        printf "\n\n -->  \e[93mMoving the starter to: `echo $starters`   \e[0m   \n\n"
+        mv $deploy/$starter $starters
+        sleep 2;
+        printf " \e[92mDone moving starter folder! \e[0m\n  "
+        sleep 1;
+
+        # printf "\n\n   \e[93mDo you want to start the middleware?  \e[0m   \n\n"
+        # printf "Choose Action:
+
+        # [1] Yes
+        # [2] No"\n        
+        # printf "{$USER}@Midlleware-Deployer: "
+        # read startM
+        # if [[ $startM == 1 ]]; then
+        # cd $middlewares/$starters/$starter
+        # bash "$starter"_start && printf " \e[92Middleware has been started! \e[0m\n  "
+        # tail -f nohup.out
+
+        # elif [[ $action == 2 ]]; then
+        # printf " \e[92mExiting! \e[0m\n  "
+
+        # else
+        #     printf "\n\n[ Choise Is Out Of Range ] Exiting ...\n\n"
+        #     exit;
+        # fi
+
+
+    elif [[ $action == 2 ]]; then
+
+	
+
+
+
+    else
+        printf "\n\n[ Choise Is Out Of Range ] Exiting ...\n\n"
+        exit;
+    fi
+
+#     printf "\n\n\e[33m==============================================\e[0m\n"
+#     printf "\n\e[33m==============================================\e[0m\n\n"
+
