@@ -222,6 +222,13 @@ echo "$USER"
 
 
     elif [[ $action == 2 ]]; then
+    cd $middlewares
+    printf "\n\n -->  \e[93mChecking the middlewares in: `pwd`  \e[0m   \n\n"
+        for entry in `ls $deploy`; do
+        printf "[-] \e[92m$entry\n\e[0m"
+        done
+    
+
 
 	
 
