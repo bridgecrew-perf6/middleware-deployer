@@ -6,6 +6,7 @@
 ### Please do not run this script with root user, as the script will detect the user and will not run if its root.
 
 * Installing the script:
+
 Changing permissions:
 ```
 chmod +x middleware
