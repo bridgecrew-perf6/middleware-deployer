@@ -112,7 +112,7 @@ echo "$USER"
     if [[ $action == 1 ]]; then
     #creating the middleware folder
         printf "\n\n -->  \e[93mCreate the middleware folder:  \e[0m   \n\n"
-        printf "[-] \e[91mPlease create the first letter capital for this folder! \e[0m "
+        printf "[-] \e[91mPlease create the first letter capital for this folder! \e[0m \n\n"
         printf "{$USER}@Midlleware-Deployer: "
         read mfolder
         if [[ "$mfolder" =~ ^[A-Z] ]]
@@ -120,7 +120,7 @@ echo "$USER"
         printf " \e[92mUpper found creating folder: $mfolder \e[0m\n " 
         mkdir -p $deploy/$mfolder;sleep 1;
         else
-        printf " \e[91mNo Upper found, exiting! \e[0m " 
+        printf " \e[91mThe first letter is not upper, exiting! \e[0m " ;sleep 1;exit;
         fi
 
         printf " \e[92mFolder created successfuly: $mfolder \e[0m "
@@ -136,9 +136,16 @@ echo "$USER"
         printf "\n\n -->  \e[93mChoose the tar file you want from the list above:  \e[0m   \n\n"
         printf "{$USER}@Midlleware-Deployer: "
         read choise
+        FILE=$choise
+        if [ -e "$FILE" ]; then
+            printf " \e[92m$choise exist, continue... \e[0m \n\n ";sleep 1;
+
+        else 
+            echo "$FILE does not exist, Exiting..."; exit;
+        fi
         cp $choise $mfolder
         cd $mfolder
-        tar -xzvf $choise
+        tar -xzvf $choise > /dev/null
         sleep 1;
         rm $choise
         cd $deploy
@@ -147,13 +154,15 @@ echo "$USER"
 
         #Chooseing the port.
         printf "\n\n -->  \e[93mChoose the port:  \e[0m   \n\n"
-        cd $deploy
-        usedPorts=`grep -rs $middlewares -e server.port=`
-        echo $usedPorts |tail -10
+        cd $middlewares
+        usedPorts=$(grep -rs $middlewares --exclude-dir=Backups -e server.port=) ;sleep 3;
+        printf "\n\n\e[33m====================================\e[0m\n"
+        printf "\e[33m` echo "$usedPorts" |tail -n10`   \e[0m                  "
+        printf "\n\e[33m====================================\e[0m\n\n"
         # `less -10 "$usedPorts"`
         printf "{$USER}@Midlleware-Deployer: "
         read port
-        if netstat -lntp | grep ':"'$port"'.*java'" > /dev/null; then
+        if netstat -tulpn | grep ':"'$port"'.*java'" > /dev/null; then
            printf "\n\n -->  \e[93mThis port: $port, is already in use please choose another one, exiting! `exit`  \e[0m   \n\n"
         else
         sed -i 's/server.port=2020/server.port='"$port"'/g' $deploy/$mfolder/application.properties
@@ -184,7 +193,7 @@ echo "$USER"
 
         #Creating starter file and folder.
         printf "\n\n -->   \e[93mCreate the starter folder:  \e[0m   \n\n"
-        printf "[-] \e[91mPlease create the first letter small for this folder! \e[0m "
+        printf "[-] \e[91mPlease create the first letter small for this folder! \e[0m  \n\n "
 
         printf "{$USER}@Midlleware-Deployer: "
         read starter
@@ -203,27 +212,27 @@ echo "$USER"
         printf " \e[92mDone moving starter folder! \e[0m\n  "
         sleep 1;
 
-        # printf "\n\n   \e[93mDo you want to start the middleware?  \e[0m   \n\n"
-        # printf "Choose Action:
+        printf "\n\n   \e[93mDo you want to start the middleware?  \e[0m   \n\n"
+        printf "Choose Action:
 
-        # [1] Yes
-        # [2] No"\n        
-        # printf "{$USER}@Midlleware-Deployer: "
-        # read startM
-        # if [[ $startM == 1 ]]; then
-        # cd $middlewares/$starters/$starter
-        # bash "$starter"_start && printf " \e[92Middleware has been started! \e[0m\n  "
-        # tail -f nohup.out
+        [1] Yes
+        [2] No"\n        
+        printf "{$USER}@Midlleware-Deployer: "
+        read startM
+        if [[ $startM == 1 ]]; then
+        cd $middlewares/$starters/$starter
+        bash "$starter"_start && printf " \e[92Middleware has been started! \e[0m\n  "
+        tail -f nohup.out
 
-        # elif [[ $action == 2 ]]; then
-        # printf " \e[92mExiting! \e[0m\n  "
+        elif [[ $action == 2 ]]; then
+        printf " \e[92mExiting! \e[0m\n  "
 
-        # else
-        #     printf "\n\n[ Choise Is Out Of Range ] Exiting ...\n\n"
-        #     exit;
-        # fi
+        else
+            printf "\n\n[ Choise Is Out Of Range ] Exiting ...\n\n"
+            exit;
+        fi
 
-
+#############################################################################################################################
     elif [[ $action == 2 ]]; then
     cd $middlewares
     printf "\n\n -->  \e[93mChecking the middlewares in: $middlewares  \e[0m   \n\n"
@@ -239,8 +248,8 @@ echo "$USER"
         else 
             echo "$FILE does not exist, Exiting..."; exit;
         fi
-        launchM=`ps aux |grep $launch`
-        kill -9 $(ps aux |grep $launch)
+        launchM=$(ps aux |grep $launch)
+        kill -9 $launchM
         sleep 2;
         printf " \e[92mMiddleware has been stopped: $launchM \e[0m "
 
@@ -275,13 +284,20 @@ echo "$USER"
         printf "[-] \e[92m`file $entry`\n\e[0m"
         done
         #choosing the tar file by copy it.
-        printf "\n\n -->  \e[93mChoose the tar file you want from the list above:  \e[0m   \n\n"
+        printf "\n\n -->  \e[93mChoose  your new tar version you want from the list above:  \e[0m   \n\n"
         printf "{$USER}@Midlleware-Deployer: "
         cd $deploy
         read Uchoise
+        FILE=$Uchoise
+        if [ -e "$FILE" ]; then
+            echo "$FILE exists."
+        else 
+            echo "$FILE does not exist, Exiting..."; exit;
+        fi
+
         cp $Uchoise $middlewares/$launch
         cd $middlewares/$launch
-        tar -xzvf $Uchoise
+        tar -xzvf $Uchoise > /dev/null
 
         sleep 1;
         rm $Uchoise
