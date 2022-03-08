@@ -31,12 +31,13 @@ cat <<"EOF"
                                         .-:/+osssso++/:.`
 
 			          Midlleware-Deployer An Automated Tool For Deploying or upgrading Inegration middlewares
-						v1.0
+					  v1.0
 EOF
 
 #Variabels to be changed:
 deploy='/home/user/projects/NCEP/local-ncep/u01/Deployments'
 middlewares='/home/user/projects/NCEP/local-ncep/u01/middlewares'
+backup='/home/user/projects/NCEP/local-ncep/u01/middlewares/Backups'
 starters='/home/user/projects/NCEP/local-ncep/u01/middlewares/starters'
 
 printf "
@@ -66,7 +67,7 @@ printf "\e[7m               Banner               \e[27m"
 printf "\n\e[7m====================================\e[27m\n\n"
 
 printf "[+] \e[91mDate \e[0m=> "
-date +'%m-%d-%Y'
+date +'%m/%d/%Y'
 printf "[+] \e[91mCurrent User \e[0m=> "
 if [ "$EUID" = 0 ]
   then echo "Please run as regular user! Exiting..."
@@ -74,7 +75,7 @@ if [ "$EUID" = 0 ]
 fi
 echo "$USER"
 
-# if [ -z "${domain}" ]; then
+# if [ -z "${switch}" ]; then
 
 #     usage
 #     exit 1
@@ -141,6 +142,8 @@ echo "$USER"
         sleep 1;
         rm $choise
         cd $deploy
+        printf " \e[92mDone unpacking: $choise \e[0m  ";sleep 1;
+
 
         #Chooseing the port.
         printf "\n\n -->  \e[93mChoose the port:  \e[0m   \n\n"
@@ -163,7 +166,7 @@ echo "$USER"
         #Adding Hikari pool configurations.
         printf "\n\n -->  \e[93mAdding Hikari pool:  \e[0m   \n\n"
 
-        echo -e "spring.datasource.hikari.connectionTimeout=${hikari_pool_connTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.maxLifetime=${hikari_pool_maxLifetime}/nspring.datasource.hikari.maximumPoolSize=${hikari_pool_maximumPoolSize}\nspring.datasource.hikari.minimumIdle=${hikari_pool_minimumIdle}\nspring.datasource.hikari.leakDetectionThreshold=${hikari_pool_leakDetectionThreshold}" >> $deploy/$mfolder/application.properties;sleep 2;
+        echo -e 'spring.datasource.hikari.connectionTimeout=${hikari_pool_connTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.maxLifetime=${hikari_pool_maxLifetime}\nspring.datasource.hikari.maximumPoolSize=${hikari_pool_maximumPoolSize}\nspring.datasource.hikari.minimumIdle=${hikari_pool_minimumIdle}\nspring.datasource.hikari.leakDetectionThreshold=${hikari_pool_leakDetectionThreshold}' >> $deploy/$mfolder/application.properties;sleep 2;
         printf " \e[92mDone adding Hikari pool! \e[0m  "
 
         #Changing permissions.
@@ -190,7 +193,7 @@ echo "$USER"
         
         echo "nohup /u01/JRE_OpenJ9/jdk8u282-b08-jre/bin/java -Xdump:none -Xshareclasses -Xquickstart -jar -Duser.timezone=Asia/Ramallah /u01/middlewares/$mfolder/*launcher* &" > "$starter"_start
         chmod +x "$starter"_start
-       printf " \e[92mStarter file created successfully! $mfolder \e[0m "
+       printf " \e[92mStarter file created successfully! $starter \e[0m "
         sleep 2;
 
         #moving the starter folder
@@ -223,15 +226,163 @@ echo "$USER"
 
     elif [[ $action == 2 ]]; then
     cd $middlewares
-    printf "\n\n -->  \e[93mChecking the middlewares in: `pwd`  \e[0m   \n\n"
-        for entry in `ls $deploy`; do
+    printf "\n\n -->  \e[93mChecking the middlewares in: $middlewares  \e[0m   \n\n"
+        for entry in `ls $middlewares`; do
         printf "[-] \e[92m$entry\n\e[0m"
         done
+    printf "\n\n -->  \e[93mChoose the middleware from the list above:  \e[0m   \n\n"
+        printf "{$USER}@Midlleware-Deployer: "
+        read  launch
+        FILE=$launch
+        if [ -e "$FILE" ]; then
+            echo "$FILE exists."
+        else 
+            echo "$FILE does not exist, Exiting..."; exit;
+        fi
+        launchM=`ps aux |grep $launch`
+        kill -9 $(ps aux |grep $launch)
+        sleep 2;
+        printf " \e[92mMiddleware has been stopped: $launchM \e[0m "
+
+    printf "\n\n -->  \e[93mTakeing backup for: $launch  \e[0m   \n\n"
+        
+        Bdate="$launch-`date '+%d%B%Y'`"
+        mkdir -p "$backup/$Bdate"
+
+        mv "$middlewares/$launch/" "$backup/$Bdate/";
+        # mv "$backup/$Bdate/$launch" "$launch-$(date +%F_%R)"
+        FILE=$middlewares/$launch
+        if [ -e "$FILE" ]; then
+            echo "$FILE exists, continue";
+        else 
+            echo "$FILE does not exist. Creating..."
+            mkdir -p $middlewares/$launch
+            cd $middlewares/$launch
+        fi
+        # mkdir -p $middlewares/$launch
+        # cd $middlewares/$launch
+        # mv `$launch/*` "$backup/$Bdate"
+        # mv "$launch" "$backup/$launch_$Bdate"
+        sleep 2;
+        printf " [+] \e[92mMiddleware has been Backedup: $launch \e[0m \n "
+        printf " [+] \e[92mBackup location: $backup \e[0m "
+        sleep 1;
+
+
+        printf "\n\n -->  \e[93mChecking the files in: $deploy  \e[0m   \n\n"; sleep 2;
+        cd $deploy
+        for entry in `ls $deploy`; do
+        printf "[-] \e[92m`file $entry`\n\e[0m"
+        done
+        #choosing the tar file by copy it.
+        printf "\n\n -->  \e[93mChoose the tar file you want from the list above:  \e[0m   \n\n"
+        printf "{$USER}@Midlleware-Deployer: "
+        cd $deploy
+        read Uchoise
+        cp $Uchoise $middlewares/$launch
+        cd $middlewares/$launch
+        tar -xzvf $Uchoise
+
+        sleep 1;
+        rm $Uchoise
+        chmod -R 777 $middlewares/$launch/
+        sleep 2;
+        printf " \e[92mDone unpacking and changing permissions for: $Uchoise and $launch. \e[0m  ";sleep 1;
+
+
+        printf "\n\n -->  \e[93mAdding Hikari pool:  \e[0m   \n\n"
+
+        echo -e 'spring.datasource.hikari.connectionTimeout=${hikari_pool_connTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.idleTimeout=${hikari_pool_idleTimout}\nspring.datasource.hikari.maxLifetime=${hikari_pool_maxLifetime}\nspring.datasource.hikari.maximumPoolSize=${hikari_pool_maximumPoolSize}\nspring.datasource.hikari.minimumIdle=${hikari_pool_minimumIdle}\nspring.datasource.hikari.leakDetectionThreshold=${hikari_pool_leakDetectionThreshold}' >> $middlewares/$launch/application.properties;sleep 2;
+        printf " \e[92mDone adding Hikari pool! \e[0m  "
+
+
+
+        printf "\n\n -->  \e[93mChecking Config files:  application.properties \e[0m   \n\n";sleep 2;
+                printf "\n\e[7m====================================\e[27m\n\n"
+                    cd $backup/$Bdate/$launch
+                    diff1=`cat $backup/$Bdate/$launch/application.properties`
+                    cd $middlewares/$launch
+                    diff2=`cat $middlewares/$launch/application.properties`
+                    diff <(echo "$diff1") <(echo "$diff2")
+                printf "\n\e[7m====================================\e[27m\n\n"
+
+            while true; do
+                printf "{$USER}@Midlleware-Deployer: "
+                read -p "Do you wish to edit application.properties? yes, no, copy " ync
+                case $ync in
+                    [Yy]* ) 
+                        vimdiff "$middlewares/$launch/application.properties" "$backup/$Bdate/$launch/application.properties"; break;;
+                    [Nn]* ) 
+                    break;;
+
+                    [Cc]* )
+                        cp $backup/$Bdate/$launch/application.properties $middlewares/$launch/application.properties; break;;
+                    
+                    * ) echo "Please answer yes or no.";;
+                esac
+            done
+
+        printf "\n\n -->  \e[93mChecking Config files: communication.properties  \e[0m   \n\n";sleep 2;
+            printf "\n\e[7m====================================\e[27m\n\n"
+                        cd $backup/$Bdate/$launch
+                        diff1=`cat $backup/$Bdate/$launch/communication.properties`
+                        cd $middlewares/$launch
+                        diff2=`cat $middlewares/$launch/communication.properties`
+                        diff <(echo "$diff1") <(echo "$diff2")
+            printf "\n\e[7m====================================\e[27m\n\n"
+
+                while true; do
+                    printf "{$USER}@Midlleware-Deployer: "
+                    read -p "Do you wish to edit communication.properties? yes, no, copy " ync
+                    case $ync in
+                        [Yy]* ) 
+                            vimdiff "$middlewares/$launch/communication.properties" "$backup/$Bdate/$launch/communication.properties"; break;;
+                        [Nn]* ) 
+                            break;;
+                        
+                        [Cc]* )
+                            cp $backup/$Bdate/$launch/communication.properties $middlewares/$launch/communication.properties; break;;
+                        * ) echo "Please answer yes or no.";;
+                    esac
+                done
+
+
+
+        printf "\n\n -->  \e[93mCopying old Hazelcast.xmal file to the new version... \e[0m   \n\n";sleep 2;
+            FILE=$backup/$Bdate/$launch/hazelcast.xml
+            if [ -e "$FILE" ]; then
+                echo "$FILE Exists, copying... "
+                cd $backup/$Bdate/$launch
+                cp $backup/$Bdate/$launch/hazelcast.xml $middlewares/$launch/hazelcast.xml
+            else 
+                echo "$FILE does not exist."
+            fi
+
+        printf "\n\n -->  \e[93mCopying old error.properties file to the new version... \e[0m   \n\n";sleep 2;
+            FILE=$backup/$Bdate/$launch/error.properties
+            if [ -e "$FILE" ]; then
+                echo "$FILE Exists, copying... "
+                cd $backup/$Bdate/$launch
+                cp $backup/$Bdate/$launch/error.properties $middlewares/$launch/error.properties
+            else 
+                echo "$FILE does not exist."
+            fi
+
+        printf "\n\n -->  \e[93mCopying old error_description.properties file to the new version... \e[0m   \n\n";sleep 2;
+            FILE=$backup/$Bdate/$launch/error_description.properties
+            if [ -e "$FILE" ]; then
+                echo "$FILE Exists, copying... "
+                cd $backup/$Bdate/$launch
+                cp $backup/$Bdate/$launch/error_description.properties $middlewares/$launch/error_description.properties
+            else 
+                echo "$FILE does not exist."
+            fi
+
+        printf "\n\n -->  \e[93mDone upgrading: $launch to the new version. Bye  \e[0m   \n\n";sleep 2;exit;
+
+
+        
     
-
-
-	
-
 
 
     else
